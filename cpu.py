@@ -4,6 +4,43 @@ import threading,time,sys,signal
 cores = []
 corenum = 0
 
+
+IS = {
+	"NOP"	:0x0000,
+
+	"ADDAB"	:0x0001,
+	"ADDIB"	:0x0002,
+	"ADDAI"	:0x0003,
+	"ADDII"	:0x0004,
+	"ADDPB"	:0x0005,
+	"ADDAP"	:0x0006,
+	"ADDPP"	:0x0007,
+	"ADDPI"	:0x0008,
+	"ADDIP"	:0x0009,
+
+	"SUBAB"	:0x000a,
+	"SUBIB"	:0x000b,
+	"SUBAI"	:0x000c,
+	"SUBII"	:0x000d,
+	"SUBPB"	:0x000e,
+	"SUBAP"	:0x000f,
+	"SUBPP"	:0x0010,
+	"SUBPI"	:0x0011,
+	"SUBIP"	:0x0012,
+
+	"SUBAB"	:0x000a,
+	"SUBIB"	:0x000b,
+	"SUBAI"	:0x000c,
+	"SUBII"	:0x000d,
+	"SUBPB"	:0x000e,
+	"SUBAP"	:0x000f,
+	"SUBPP"	:0x0010,
+	"SUBPI"	:0x0011,
+	"SUBIP"	:0x0012,
+
+}
+
+
 class core(threading.Thread):
 	def __init__(self,speed,FLAGS):
 		super().__init__()
@@ -12,7 +49,8 @@ class core(threading.Thread):
 		self.FLAGS = FLAGS
 		self.speed = speed
 
-		self.register_self()
+		
+
 		self.start()
 
 	def register_self(self):
