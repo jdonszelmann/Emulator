@@ -6,6 +6,8 @@ class HDD:
 		self.file = open(filename,"rb+")
 		self.moveto()
 		self.operations = queue.Queue()
+		from status import STATUS
+		self.STATUS = STATUS 
 
 	def moveto(self,pos=1):
 		self.file.seek(pos,0)
@@ -20,13 +22,17 @@ class HDD:
 		try:
 			return int.from_bytes(self.file.read(1),byteorder='little')
 		except IndexError:
-			return IndexError("end of hdd reached")
+			print("end of hdd reached. attempting shutdown...")
+			self.STATUS["INTERRUPT"] = True
+			return 0
+
 
 	def write(self,value):
 		try:
 			self.file.write(bytes([value]))
 		except IndexError:
-			return IndexError("end of hdd reached")
+			print("end of hdd reached. attempting shutdown...")
+			self.STATUS["INTERRUPT"] = True
 			
 	def update(self):
 		if not self.operations.empty():

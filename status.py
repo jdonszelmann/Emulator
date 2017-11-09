@@ -1,7 +1,7 @@
 
 
-class flags:
-	f = {"INTERRUPT":False}
+class status:
+	f = {"INTERRUPT":False,"DEBUG":True}
 
 	def __init__(self):
 		pass
@@ -12,6 +12,6 @@ class flags:
 	def __setitem__(self,attr,item):
 		self.f[attr] = item
 
-FLAGS = flags()
+STATUS = status()
 
 

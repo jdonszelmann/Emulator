@@ -1,7 +1,8 @@
 import threading,time,sys,signal
-import configreader,harddisk_interface
+import configreader,harddisk_interface, tools
 
 from ram import Ram
+from constants import IS
 from register import RegisterSet
 
 config = configreader.getconfig()
@@ -16,11 +17,13 @@ except IndexError: hdd = harddisk_interface.HDD("disk.hdd")
 
 
 class core(threading.Thread):
-	def __init__(self,speed,FLAGS):
+	def __init__(self,speed):
 		super().__init__()
 		self._stop_event = threading.Event()
 		# self.daemon = True
-		self.FLAGS = FLAGS
+
+		from status import STATUS
+		self.STATUS = STATUS
 		self.speed = speed
 
 		self.enabled = True
@@ -58,37 +61,56 @@ class core(threading.Thread):
 		e = threading.Event()
 		def callback(value):
 			nonlocal val, e
-			if(type(value) == Exception):
-				print("EXCEPTION")
 			val = value
 			e.set()
-		
 		ram.new_operation(["READ",addr],callback)	
-		e.wait()
+		e.wait(0.5)
 		return val
 
+	def ADDAB(self,reg1,reg2,reg3):
+		self.registers[reg3] = self.registers[reg2] + self.registers[reg1]
+
+
+	def MOVAB(self,reg1,reg2):
+		self.registers[reg2] = self.registers[reg1]
+
+	def MOVIB(self,val,reg):
+		self.registers[reg] = val
 
 	def run(self):
 		try:
-			while not self.FLAGS["INTERRUPT"]:
+			while not self.STATUS["INTERRUPT"]:
 				if self.enabled:
 					start_time = time.time()
 
-					self.registers.PC += 1
-					instruction = self.ram_synchronous_read(self.registers.PC)
+					instruction = IS.get((self.ram_synchronous_read(self.registers.PC)<< 8) + self.ram_synchronous_read(self.registers.PC+1),"NOP")
+					self.registers.PC += 2
+					args = []
+					for i in instruction[1]:
+						val = 0
+						for _ in range(i):
+							val <<= 8
+							val += (self.ram_synchronous_read(self.registers.PC))
+							self.registers.PC += 1
+						args.append(val)
 
-					print(instruction)
+					getattr(self,instruction[0])(*args)
+
+					if self.STATUS["DEBUG"]:
+						print(self.registers)
+						print(instruction[0], args)
 
 					halttime = (1/self.speed) - (time.time() - start_time)
 					time.sleep(halttime if halttime > 0 else 0)
 		
 		except Exception as e:
-			print("{}:'{}' in core #{}".format(type(e).__name__,e,self.corenum))
-			self.stop()
+			if not self.STATUS["INTERRUPT"]:
+				print("{}:'{}' in core #{}".format(type(e).__name__,e,self.corenum))
+				self.stop()
 			
 
-def new_core(speed,FLAGS):
-	core(speed,FLAGS)
+def new_core(speed):
+	core(speed)
 
 
 def update():

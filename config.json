@@ -3,7 +3,7 @@
 {
 	"ram-size":"10k",
 	"vram-size":"10k",
-	"corespeed":"5hz",
+	"corespeed":"50hz",
 	"cores":"1",
 	"register-num":"16"
 }
