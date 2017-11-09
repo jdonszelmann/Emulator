@@ -1,44 +1,18 @@
 import threading,time,sys,signal
+import configreader,harddisk_interface
 
+from ram import Ram
+from register import RegisterSet
+
+config = configreader.getconfig()
 
 cores = []
 corenum = 0
 
-
-IS = {
-	"NOP"	:0x0000,
-
-	"ADDAB"	:0x0001,
-	"ADDIB"	:0x0002,
-	"ADDAI"	:0x0003,
-	"ADDII"	:0x0004,
-	"ADDPB"	:0x0005,
-	"ADDAP"	:0x0006,
-	"ADDPP"	:0x0007,
-	"ADDPI"	:0x0008,
-	"ADDIP"	:0x0009,
-
-	"SUBAB"	:0x000a,
-	"SUBIB"	:0x000b,
-	"SUBAI"	:0x000c,
-	"SUBII"	:0x000d,
-	"SUBPB"	:0x000e,
-	"SUBAP"	:0x000f,
-	"SUBPP"	:0x0010,
-	"SUBPI"	:0x0011,
-	"SUBIP"	:0x0012,
-
-	"SUBAB"	:0x000a,
-	"SUBIB"	:0x000b,
-	"SUBAI"	:0x000c,
-	"SUBII"	:0x000d,
-	"SUBPB"	:0x000e,
-	"SUBAP"	:0x000f,
-	"SUBPP"	:0x0010,
-	"SUBPI"	:0x0011,
-	"SUBIP"	:0x0012,
-
-}
+ram  = Ram(config["ram-size"])
+try: hdd = harddisk_interface.HDD(sys.argv[1])
+except IndexError: hdd = harddisk_interface.HDD("disk.hdd")
+# vram = Ram(config["vram_size"])
 
 
 class core(threading.Thread):
@@ -49,8 +23,11 @@ class core(threading.Thread):
 		self.FLAGS = FLAGS
 		self.speed = speed
 
-		
+		self.enabled = True
 
+		self.registers = RegisterSet(config["register-num"])
+		
+		self.register_self()
 		self.start()
 
 	def register_self(self):
@@ -63,15 +40,48 @@ class core(threading.Thread):
 		global cores
 		del cores[cores.index(self)]
 
+	def ram_to_register(self,addr,register):
+		def callback(value):
+			self.enabled = True
+			self.registers[register] = value
+		self.enabled = False
+		ram.new_operation(["READ",addr],callback)
+
+	def register_to_ram(self,addr,register):
+		def callback(value):
+			self.enabled = True
+		self.enabled = False
+		ram.new_operation(["WRITE",addr,self.registers[register].value],callback)
+
+	def ram_synchronous_read(self,addr):
+		val = None
+		e = threading.Event()
+		def callback(value):
+			nonlocal val, e
+			if(type(value) == Exception):
+				print("EXCEPTION")
+			val = value
+			e.set()
+		
+		ram.new_operation(["READ",addr],callback)	
+		e.wait()
+		return val
+
+
 	def run(self):
 		try:
 			while not self.FLAGS["INTERRUPT"]:
-				start_time = time.time()
+				if self.enabled:
+					start_time = time.time()
 
-				#code
+					self.registers.PC += 1
+					instruction = self.ram_synchronous_read(self.registers.PC)
 
-				halttime = (1/self.speed) - (time.time() - start_time)
-				time.sleep(halttime if halttime > 0 else 0)
+					print(instruction)
+
+					halttime = (1/self.speed) - (time.time() - start_time)
+					time.sleep(halttime if halttime > 0 else 0)
+		
 		except Exception as e:
 			print("{}:'{}' in core #{}".format(type(e).__name__,e,self.corenum))
 			self.stop()
@@ -81,8 +91,9 @@ def new_core(speed,FLAGS):
 	core(speed,FLAGS)
 
 
-
-
+def update():
+	hdd.update()
+	ram.update()
 
 
 

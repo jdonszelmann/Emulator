@@ -1,7 +1,7 @@
 
 import signal,sys
 
-import configreader,cpu,flags
+import configreader,cpu,flags,harddisk_interface
 
 config = configreader.getconfig()
 
@@ -21,6 +21,7 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 while not flags.FLAGS["INTERRUPT"]:
+	cpu.update()
 	if len(cpu.cores) < config["cores"]:
 		exit("one or more cores have failed. attempting shutdown...")
 

@@ -111,5 +111,23 @@ IS = {
 	"NOTI"	:0x005c,
 	"NOTP"	:0x005d,
 
+	"POPA"	:0x005e,
+	"POPI"	:0x005f,
+	"POPP"	:0x0060,
 	
+	"PUSHA"	:0x0061,
+	"PUSHI"	:0x0062,
+	"PUSHP"	:0x0063,
+
+	"RET"	:0x0064,
+	"CALL"	:0x0065,
+
+	"MOVAB"	:0x0066,
+	"MOVIB"	:0x0067,
+	"MOVPB"	:0x0068,
+	"MOVAP"	:0x0069,
+	"MOVIP"	:0x006a,
+	"MOVPP"	:0x006b,
+	
+	"INT"	:0x006c,
 }
