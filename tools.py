@@ -1,4 +1,3 @@
 
-def revdict(val:dict):
-	val.update(dict(reversed(item) for item in val.items()))
-	return val
+def revdict(val:dict,index):
+	return {item[index]:key for key,item in val.items()}

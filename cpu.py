@@ -67,15 +67,25 @@ class core(threading.Thread):
 		e.wait(0.5)
 		return val
 
-	def ADDAB(self,reg1,reg2,reg3):
+	def NOP(self,*args):
+		pass
+
+	def ADDABC(self,reg1,reg2,reg3):
 		self.registers[reg3] = self.registers[reg2] + self.registers[reg1]
 
+	def ADDAIC(self,reg1,imm1,reg3):
+		print(reg1,imm1,reg3)
+		self.registers[reg3] = imm1 + self.registers[reg1]
 
 	def MOVAB(self,reg1,reg2):
-		self.registers[reg2] = self.registers[reg1]
+		self.registers[reg1] = self.registers[reg2]
 
-	def MOVIB(self,val,reg):
+	def MOVAI(self,reg,val):
 		self.registers[reg] = val
+
+
+	def JMPI(self,val):
+		self.registers.PC = val
 
 	def run(self):
 		try:
@@ -93,12 +103,13 @@ class core(threading.Thread):
 							val += (self.ram_synchronous_read(self.registers.PC))
 							self.registers.PC += 1
 						args.append(val)
+					print(args)
 
 					getattr(self,instruction[0])(*args)
 
 					if self.STATUS["DEBUG"]:
-						print(self.registers)
-						print(instruction[0], args)
+						print(self.registers,end="")
+						print(str(instruction[0]) + " " + str(args) + "\n",end="")
 
 					halttime = (1/self.speed) - (time.time() - start_time)
 					time.sleep(halttime if halttime > 0 else 0)

@@ -28,13 +28,13 @@ class RegisterSet:
 			return self.__dict__[attr]
 
 	def __repr__(self):
-		print("===================================================================")
-		print("PC:{}, BP:{}, SP:{}".format(self.defaultregisters[0].value,self.defaultregisters[1].value,self.defaultregisters[2].value))
+		print("===================================================================\n",end="")
+		print("PC:{}, BP:{}, SP:{}\n".format(self.defaultregisters[0].value,self.defaultregisters[1].value,self.defaultregisters[2].value),end="")
 		for index,i in enumerate(self.registers):
 			print("{}:{} ".format(index,i.value),end="")
 		print()
 		print("===================================================================",end="")
-		return ""
+		return "\n"
 
 
 
